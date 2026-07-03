@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutor Portal — The Mathologists</title>
+  <link rel="stylesheet" href="/assets/css/tm-design-system.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green:  #1a3a2a;
+      --green2: #2d5c43;
+      --cream:  #f5f0e8;
+      --cream2: #ede8dc;
+      --gold:   #c9a84c;
+      --text:   #1a1a1a;
+      --muted:  #6b7280;
+      --radius: 12px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.10);
+    }
+    body {
+      font-family: 'Inter', 'Helvetica Neue', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── PORTAL ────────────────────────────────────────── */
+    #portal { display: none; }
+
+    .topbar {
+      background: var(--green); color: #fff;
+      padding: 0 32px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .topbar-logo { font-weight: 800; font-size: 18px; letter-spacing: 0.02em; }
+    .topbar-logo span { font-weight: 400; opacity: 0.7; font-size: 14px; margin-left: 10px; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .tutor-name { font-size: 14px; opacity: 0.85; }
+    .btn-signout {
+      background: rgba(255,255,255,0.15); color: #fff;
+      border: 1px solid rgba(255,255,255,0.3); border-radius: 6px;
+      padding: 6px 14px; font-size: 13px; cursor: pointer; transition: background 0.2s;
+    }
+    .btn-signout:hover { background: rgba(255,255,255,0.25); }
+
+    .page-header { background: var(--green); color: #fff; padding: 40px 32px 48px; }
+    .page-header h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+    .page-header p { font-size: 15px; opacity: 0.75; max-width: 560px; }
+
+    .main-content { max-width: 1100px; margin: 0 auto; padding: 40px 32px 80px; }
+
+    /* ── CATEGORY TABS (top level) ─────────────────────── */
+    .cat-tabs {
+      display: flex; gap: 6px; margin-bottom: 28px; flex-wrap: wrap;
+      border-bottom: 2px solid var(--cream2); padding-bottom: 0;
+    }
+    .cat-tab {
+      background: none; border: none; border-bottom: 3px solid transparent;
+      margin-bottom: -2px; padding: 10px 20px; font-size: 15px; font-weight: 600;
+      color: var(--muted); cursor: pointer; transition: all 0.18s;
+    }
+    .cat-tab:hover { color: var(--green); }
+    .cat-tab.active { color: var(--green); border-bottom-color: var(--green); }
+
+    /* ── YEAR PILLS (sub-filter, shown under Holiday Class) */
+    .year-pills {
+      display: flex; gap: 8px; margin-bottom: 28px; flex-wrap: wrap;
+    }
+    .year-pill {
+      background: #fff; border: 2px solid #e5e7eb; border-radius: 100px;
+      padding: 7px 18px; font-size: 13px; font-weight: 600; color: var(--muted);
+      cursor: pointer; transition: all 0.18s;
+    }
+    .year-pill:hover { border-color: var(--green); color: var(--green); }
+    .year-pill.active { background: var(--green); border-color: var(--green); color: #fff; }
+
+    /* ── SECTION HEADING ───────────────────────────────── */
+    .section-heading {
+      font-size: 17px; font-weight: 700; color: var(--green);
+      margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--cream2);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .subsection-heading {
+      font-size: 14px; font-weight: 600; color: var(--muted);
+      margin: 16px 0 12px; padding: 6px 0 6px 12px;
+      border-left: 3px solid var(--cream2);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .subsection-drop-zone { margin-left: 12px; }
+    .section-actions { display: flex; gap: 4px; align-items: center; opacity: 0; transition: opacity 0.15s; }
+    .section-heading:hover .section-actions,
+    .subsection-heading:hover .section-actions { opacity: 1; }
+    .btn-add-subsection {
+      background: none; border: 1px solid var(--green2); color: var(--green);
+      border-radius: 5px; padding: 2px 9px; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .btn-add-subsection:hover { background: var(--cream2); }
+    .btn-capture-frame {
+      background: var(--green); color: #fff; border: none; border-radius: 6px;
+      padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    }
+    .btn-capture-frame:hover { background: var(--green2); }
+    #yt-frames img:hover { border-color: var(--green2) !important; transform: scale(1.04); }
+    .btn-edit-section, .btn-delete-section {
+      background: none; border: none; cursor: pointer; color: #aaa;
+      font-size: 15px; padding: 2px 6px; border-radius: 4px; line-height: 1;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-edit-section:hover { background: #e8f0ea; color: var(--green); }
+    .btn-delete-section:hover { background: #fee2e2; color: #dc2626; }
+
+    /* ── VIDEO GRID ────────────────────────────────────── */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 22px; margin-bottom: 40px;
+    }
+    .video-card {
+      background: #fff; border-radius: var(--radius); overflow: hidden;
+      box-shadow: var(--shadow); transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s; cursor: pointer;
+      position: relative;
+    }
+    .video-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.14); }
+    .video-card.dragging { opacity: 0.4; transform: none; }
+
+    /* Card action menu */
+    .card-menu-btn {
+      position: absolute; top: 10px; right: 10px; z-index: 10;
+      background: rgba(0,0,0,0.45); border: none; color: #fff;
+      width: 28px; height: 28px; border-radius: 50%; font-size: 16px; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.15s; line-height: 1;
+    }
+    .video-card:hover .card-menu-btn { opacity: 1; }
+    .card-menu {
+      position: absolute; top: 40px; right: 10px; z-index: 20;
+      background: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+      overflow: hidden; min-width: 130px; display: none;
+    }
+    .card-menu.open { display: block; }
+    .card-menu-item {
+      display: block; width: 100%; text-align: left; background: none; border: none;
+      padding: 10px 14px; font-size: 13px; font-weight: 600; cursor: pointer;
+      color: var(--text); transition: background 0.15s;
+    }
+    .card-menu-item:hover { background: var(--cream2); }
+    .card-menu-item.danger { color: #dc2626; }
+    .card-menu-item.danger:hover { background: #fef2f2; }
+
+    /* Drop zone highlight */
+    .drop-target {
+      outline: 2px dashed var(--green2); outline-offset: 4px;
+      background: #f0fdf4; border-radius: 8px;
+    }
+
+    .video-thumb {
+      background: var(--green); aspect-ratio: 16/9;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .video-thumb.teal { background: #1e4a5a; }
+    .video-thumb.slate { background: #2d3748; }
+
+    .play-icon {
+      width: 52px; height: 52px;
+      background: rgba(255,255,255,0.18); border: 2px solid rgba(255,255,255,0.5);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .video-card:hover .play-icon { background: rgba(255,255,255,0.30); }
+    .play-icon svg { margin-left: 4px; }
+
+    .video-tag {
+      position: absolute; top: 12px; left: 12px;
+      background: var(--gold); color: #fff;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 100px;
+    }
+    .video-tag.training { background: #7c3aed; }
+    .video-tag.class    { background: #0369a1; }
+
+    .video-body { padding: 16px 18px 18px; }
+    .video-badge {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--green2); margin-bottom: 7px;
+    }
+    .video-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 7px; line-height: 1.4; }
+    .video-desc  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .video-meta  { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+    .video-duration {
+      font-size: 12px; color: var(--muted); background: var(--cream2);
+      border-radius: 100px; padding: 3px 10px;
+    }
+    .btn-watch {
+      margin-left: auto; background: var(--green); color: #fff; border: none;
+      border-radius: 6px; padding: 7px 16px; font-size: 13px; font-weight: 600;
+      cursor: pointer; text-decoration: none; display: inline-block; transition: background 0.2s;
+    }
+    .btn-watch:hover { background: var(--green2); }
+
+    /* ── VIDEO MODAL ───────────────────────────────────── */
+    #video-modal {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.82); align-items: flex-start; justify-content: center;
+      padding: 24px; overflow-y: auto;
+    }
+    #video-modal.open { display: flex; }
+    .modal-inner {
+      background: #fff; border-radius: 14px; overflow: hidden;
+      width: 100%; max-width: 800px; position: relative;
+      margin: auto;
+    }
+    .modal-header {
+      background: var(--green); padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-title { color: #fff; font-size: 15px; font-weight: 700; }
+    .modal-close {
+      background: rgba(255,255,255,0.15); border: none; color: #fff;
+      width: 30px; height: 30px; border-radius: 50%; font-size: 18px; line-height: 1;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.30); }
+    .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; background: #000; }
+    .video-wrapper iframe {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;
+    }
+    /* ── FORUM ─────────────────────────────────────────── */
+    .modal-qa { padding: 24px 28px 32px; border-top: 2px solid var(--cream2); }
+    .modal-qa-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
+    .modal-qa-header h3 { font-size: 16px; font-weight: 800; color: var(--green); }
+    .forum-count { font-size: 12px; color: var(--muted); font-weight: 600; }
+
+    /* Posts */
+    .forum-posts { margin-bottom: 20px; }
+    .forum-empty { font-size: 13px; color: var(--muted); padding: 12px 0 18px; font-style: italic; }
+    .forum-post {
+      background: var(--cream); border-radius: 10px; padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+    .post-header { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+    .post-avatar {
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+      background: var(--green); color: #fff; font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .post-avatar.anon { background: #9ca3af; }
+    .post-author { font-size: 13px; font-weight: 700; color: var(--text); }
+    .post-time { font-size: 11px; color: var(--muted); margin-left: 4px; }
+    .post-type {
+      margin-left: auto; font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; padding: 3px 9px; border-radius: 100px;
+      background: var(--cream2); color: var(--green2);
+    }
+    .post-msg { font-size: 14px; line-height: 1.6; color: var(--text); }
+    .post-actions { margin-top: 10px; display: flex; align-items: center; gap: 12px; }
+    .reply-toggle-btn {
+      background: none; border: none; font-size: 12px; font-weight: 600;
+      color: var(--muted); cursor: pointer; padding: 0;
+    }
+    .reply-toggle-btn:hover { color: var(--green); }
+
+    /* Replies */
+    .forum-replies { margin-top: 10px; padding-left: 14px; border-left: 2px solid var(--cream2); }
+    .forum-reply { padding: 9px 0; border-bottom: 1px solid var(--cream2); }
+    .forum-reply:last-child { border-bottom: none; padding-bottom: 0; }
+    .forum-reply .post-msg { font-size: 13px; }
+
+    /* Reply form */
+    .inline-reply-form {
+      display: none; margin-top: 10px; padding: 12px 14px;
+      background: #fff; border-radius: 8px; border: 1.5px solid var(--cream2);
+    }
+    .inline-reply-form.open { display: block; }
+
+    /* New post box */
+    .forum-new-post {
+      background: #fff; border: 1.5px solid var(--cream2); border-radius: 12px; padding: 18px;
+    }
+    .forum-new-post h4 { font-size: 14px; font-weight: 700; color: var(--green); margin-bottom: 14px; }
+    .forum-field { margin-bottom: 12px; }
+    .forum-field input, .forum-field select, .forum-field textarea {
+      width: 100%; padding: 9px 12px; border: 1.5px solid #d1d5db;
+      border-radius: 7px; font-size: 13px; font-family: inherit; outline: none;
+      transition: border-color 0.2s; background: #fff; color: var(--text);
+    }
+    .forum-field input:focus, .forum-field select:focus, .forum-field textarea:focus { border-color: var(--green2); }
+    .forum-field textarea { resize: vertical; min-height: 80px; }
+    .forum-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+
+    /* Anonymous toggle */
+    .anon-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 12px; cursor: pointer;
+    }
+    .toggle-switch {
+      width: 36px; height: 20px; background: #d1d5db; border-radius: 100px;
+      position: relative; transition: background 0.2s; flex-shrink: 0;
+    }
+    .toggle-switch::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform 0.2s;
+    }
+    .toggle-switch.on { background: var(--green); }
+    .toggle-switch.on::after { transform: translateX(16px); }
+    .anon-label { font-size: 13px; font-weight: 600; color: var(--text); user-select: none; }
+
+    .btn-post {
+      background: var(--green); color: #fff; border: none; border-radius: 7px;
+      padding: 10px 22px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s;
+    }
+    .btn-post:hover { background: var(--green2); }
+    .btn-cancel-reply {
+      background: none; border: none; font-size: 13px; color: var(--muted);
+      cursor: pointer; margin-left: 8px;
+    }
+
+    /* Shared submit button (upload form) */
+    .btn-submit {
+      background: var(--green); color: #fff; border: none; border-radius: 8px;
+      padding: 13px 28px; font-size: 15px; font-weight: 700; cursor: pointer;
+      transition: background 0.2s; margin-top: 8px;
+    }
+    .btn-submit:hover { background: var(--green2); }
+    .upload-success-msg {
+      display: none; background: #f0fdf4; border: 1px solid #86efac;
+      border-radius: 10px; padding: 14px 18px; color: #166534;
+      font-size: 14px; font-weight: 600; margin-top: 12px;
+    }
+
+    /* ── UPLOAD MODAL ──────────────────────────────────── */
+    #upload-modal {
+      display: none; position: fixed; inset: 0; z-index: 1100;
+      background: rgba(0,0,0,0.55); align-items: flex-start;
+      justify-content: center; padding: 24px; overflow-y: auto;
+    }
+    #upload-modal.open { display: flex; }
+    .upload-inner {
+      background: #fff; border-radius: 16px; width: 100%; max-width: 620px;
+      margin: auto; overflow: hidden; box-shadow: 0 16px 60px rgba(0,0,0,0.25);
+    }
+    .upload-header {
+      background: var(--green); padding: 18px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .upload-header h2 { color: #fff; font-size: 17px; font-weight: 800; }
+    .upload-body { padding: 28px 28px 32px; }
+    .upload-field { margin-bottom: 18px; }
+    .upload-field label {
+      display: block; font-size: 13px; font-weight: 600;
+      color: var(--text); margin-bottom: 6px;
+    }
+    .upload-field label span { color: var(--muted); font-weight: 400; }
+    .upload-field input[type="text"],
+    .upload-field input[type="url"],
+    .upload-field select,
+    .upload-field textarea {
+      width: 100%; padding: 11px 14px; border: 1.5px solid #d1d5db;
+      border-radius: 8px; font-size: 14px; font-family: inherit;
+      outline: none; transition: border-color 0.2s; background: #fff; color: var(--text);
+    }
+    .upload-field input:focus,
+    .upload-field select:focus,
+    .upload-field textarea:focus { border-color: var(--green2); }
+    .upload-field textarea { resize: vertical; min-height: 90px; }
+    .upload-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* File drop zone */
+    .drop-zone {
+      border: 2px dashed #d1d5db; border-radius: 10px;
+      padding: 28px 20px; text-align: center; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s; position: relative;
+    }
+    .drop-zone:hover, .drop-zone.drag-over { border-color: var(--green2); background: #f0fdf4; }
+    .drop-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .drop-zone-icon { font-size: 28px; margin-bottom: 8px; }
+    .drop-zone p { font-size: 14px; color: var(--muted); margin: 0; }
+    .drop-zone p strong { color: var(--green); }
+    .drop-zone-name {
+      font-size: 13px; color: var(--green2); font-weight: 600;
+      margin-top: 8px; display: none;
+    }
+
+    /* Tag input */
+    .tag-input-wrap {
+      border: 1.5px solid #d1d5db; border-radius: 8px;
+      padding: 8px 10px; display: flex; flex-wrap: wrap; gap: 6px;
+      min-height: 44px; cursor: text; transition: border-color 0.2s;
+    }
+    .tag-input-wrap:focus-within { border-color: var(--green2); }
+    .tag-chip {
+      background: var(--cream2); border-radius: 100px;
+      padding: 4px 10px; font-size: 12px; font-weight: 600;
+      color: var(--green); display: flex; align-items: center; gap: 5px;
+    }
+    .tag-chip button {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 14px; line-height: 1; padding: 0;
+    }
+    .tag-chip button:hover { color: #dc2626; }
+    .tag-input-real {
+      border: none; outline: none; font-size: 13px; font-family: inherit;
+      color: var(--text); flex: 1; min-width: 100px; background: transparent;
+    }
+    .tag-hint { font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+    /* URL vs file toggle */
+    .source-toggle { display: flex; gap: 0; margin-bottom: 12px; border-radius: 8px; overflow: hidden; border: 1.5px solid #d1d5db; width: fit-content; }
+    .source-btn {
+      background: #fff; border: none; padding: 8px 18px; font-size: 13px;
+      font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.18s;
+    }
+    .source-btn.active { background: var(--green); color: #fff; }
+
+    .upload-success {
+      display: none; background: #f0fdf4; border: 1px solid #86efac;
+      border-radius: 10px; padding: 16px 20px; color: #166534;
+      font-size: 14px; font-weight: 600; margin-top: 4px; text-align: center;
+    }
+    .upload-actions { display: flex; gap: 12px; margin-top: 8px; align-items: center; }
+    .btn-cancel {
+      background: none; border: 1.5px solid #d1d5db; border-radius: 8px;
+      padding: 12px 22px; font-size: 14px; font-weight: 600; color: var(--muted);
+      cursor: pointer; transition: all 0.18s;
+    }
+    .btn-cancel:hover { border-color: #9ca3af; color: var(--text); }
+
+    /* Category tabs */
+    .cat-tabs {
+      display: flex; gap: 0; flex-wrap: wrap;
+      border-bottom: 2px solid var(--cream2);
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center; padding: 72px 20px; color: var(--muted);
+    }
+    .empty-icon { font-size: 40px; margin-bottom: 16px; opacity: 0.4; }
+    .empty-state h3 { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .empty-state p { font-size: 14px; margin-bottom: 20px; }
+    .btn-empty-add {
+      background: var(--green); color: #fff; border: none; border-radius: 8px;
+      padding: 11px 22px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s;
+    }
+    .btn-empty-add:hover { background: var(--green2); }
+
+    /* No categories state */
+    .no-cats {
+      text-align: center; padding: 80px 20px;
+    }
+    .no-cats-icon { font-size: 48px; margin-bottom: 20px; opacity: 0.35; }
+    .no-cats h2 { font-size: 20px; font-weight: 800; color: var(--green); margin-bottom: 8px; }
+    .no-cats p { font-size: 15px; color: var(--muted); margin-bottom: 24px; }
+
+    /* Tab action row */
+    .tab-actions {
+      display: flex; gap: 10px; margin-top: 32px; padding-top: 24px;
+      border-top: 1px dashed #d1d5db;
+    }
+    .btn-add-section {
+      background: none; border: 1.5px dashed #d1d5db; border-radius: 7px;
+      padding: 9px 18px; font-size: 13px; font-weight: 600; color: var(--muted);
+      cursor: pointer; transition: all 0.18s;
+    }
+    .btn-add-section:hover { border-color: var(--green); color: var(--green); }
+    .btn-add-video-inline {
+      background: var(--green); color: #fff; border: none; border-radius: 7px;
+      padding: 9px 18px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+    }
+    .btn-add-video-inline:hover { background: var(--green2); }
+
+    /* Add video button */
+    .btn-add-video {
+      background: #4ade80; color: #14532d; border: none; border-radius: 7px;
+      padding: 8px 16px; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: background 0.2s; white-space: nowrap;
+    }
+    .btn-add-video:hover { background: #86efac; }
+
+    @media (max-width: 640px) {
+      .page-header { padding: 28px 20px 36px; }
+      .main-content { padding: 28px 16px 60px; }
+      .topbar { padding: 0 16px; }
+      .qa-section { padding: 28px 20px; }
+      .qa-type-row { grid-template-columns: 1fr; }
+      .video-grid { grid-template-columns: 1fr; }
+      .cat-tab { font-size: 13px; padding: 8px 14px; }
+      .upload-two-col { grid-template-columns: 1fr; }
+      .upload-body { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- PORTAL -->
+<div id="portal">
+
+  <div class="topbar">
+    <div class="topbar-logo">Mathologists <span>Tutor Portal</span></div>
+    <div class="topbar-right">
+      <button class="btn-add-video" onclick="openUpload()">+ Add Video</button>
+    </div>
+  </div>
+
+  <div class="page-header">
+    <h1>Teaching Video Library</h1>
+  </div>
+
+  <div class="main-content">
+
+    <!-- Fixed top-level tabs -->
+    <div class="cat-tabs" id="cat-tabs" style="margin-bottom:28px">
+      <button class="cat-tab active" onclick="switchTab('holiday', this)">Holiday Class</button>
+      <button class="cat-tab" onclick="switchTab('training', this)">Training Videos</button>
+    </div>
+
+    <!-- Filter bar -->
+    <div id="filter-bar" style="display:none;align-items:center;gap:10px;margin-bottom:24px;flex-wrap:wrap">
+      <span style="font-size:13px;color:var(--muted);font-weight:600">Filter:</span>
+      <select id="filter-section" onchange="onFilterSectionChange()" style="border:1px solid #ddd;border-radius:8px;padding:6px 12px;font-size:13px;background:#fff;color:var(--text)">
+        <option value="">All sections</option>
+      </select>
+      <select id="filter-subsection" onchange="renderContent()" style="border:1px solid #ddd;border-radius:8px;padding:6px 12px;font-size:13px;background:#fff;color:var(--text)">
+        <option value="">All sub-sections</option>
+      </select>
+      <button onclick="clearFilters()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);padding:4px 8px;border-radius:6px" title="Clear filters">&#x2715; Clear</button>
+    </div>
+
+    <!-- Tab content area -->
+    <div id="cat-content"></div>
+
+
+  </div>
+</div>
+
+
+<!-- UPLOAD MODAL -->
+<div id="upload-modal" onclick="closeUploadModal(event)">
+  <div class="upload-inner">
+    <div class="upload-header">
+      <h2>Add New Video</h2>
+      <button class="modal-close" onclick="closeUpload()">&#x2715;</button>
+    </div>
+    <div class="upload-body">
+
+      <!-- Video source -->
+      <div class="upload-field">
+        <label>Video <span>— upload a file or paste a link</span></label>
+        <div class="source-toggle">
+          <button class="source-btn active" onclick="setSource('url', this)">Paste URL</button>
+          <button class="source-btn" onclick="setSource('file', this)">Upload File</button>
+        </div>
+        <div id="source-url">
+          <input type="url" id="upload-url" placeholder="e.g. https://drive.google.com/... or YouTube link" />
+        </div>
+        <div id="source-file" style="display:none">
+          <div class="drop-zone" id="drop-zone">
+            <input type="file" accept="video/*" onchange="handleFileSelect(this)" />
+            <div class="drop-zone-icon">📹</div>
+            <p><strong>Click to choose</strong> or drag a video file here</p>
+            <div class="drop-zone-name" id="drop-zone-name"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Heading -->
+      <div class="upload-field">
+        <label>Heading <span>— title shown on the video card</span></label>
+        <input type="text" id="upload-title" placeholder="e.g. Introduction to Differential Calculus" />
+      </div>
+
+      <!-- Thumbnail -->
+      <div class="upload-field">
+        <label>Thumbnail <span>— pick a frame or paste an image URL</span></label>
+        <!-- YouTube frame picker -->
+        <div id="thumb-yt-picker" style="display:none;margin-bottom:10px">
+          <p style="font-size:13px;color:var(--muted);margin:0 0 8px">Click a frame to use as thumbnail:</p>
+          <div id="yt-frames" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        </div>
+        <!-- Local video frame picker -->
+        <div id="thumb-video-picker" style="display:none;margin-bottom:10px">
+          <p style="font-size:13px;color:var(--muted);margin:0 0 8px">Drag to pick a moment, then click Capture:</p>
+          <video id="thumb-video-preview" style="width:100%;max-height:180px;border-radius:8px;background:#000" muted playsinline></video>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
+            <input type="range" id="thumb-scrubber" min="0" max="100" value="0" style="flex:1" oninput="scrubThumb(this.value)" />
+            <button type="button" class="btn-capture-frame" onclick="captureThumbFrame()">Capture frame</button>
+          </div>
+          <canvas id="thumb-canvas" style="display:none"></canvas>
+        </div>
+        <!-- Selected thumbnail preview -->
+        <div id="thumb-preview-wrap" style="display:none;margin-bottom:10px;display:none;align-items:center;gap:10px">
+          <img id="thumb-preview-img" style="height:70px;border-radius:6px;border:2px solid var(--green2);object-fit:cover" />
+          <button type="button" onclick="openThumbEditor()" style="background:var(--green);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:13px;font-weight:600;cursor:pointer">&#9998; Edit</button>
+          <button type="button" onclick="clearThumb()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px">&#x2715; Remove</button>
+        </div>
+        <!-- Thumbnail crop editor -->
+        <div id="thumb-editor" style="display:none;margin-bottom:12px">
+          <p style="font-size:13px;color:var(--muted);margin:0 0 8px">Drag to reposition. Zoom to fit. Then click Save.</p>
+          <canvas id="thumb-editor-canvas" width="320" height="180"
+            style="border-radius:8px;cursor:grab;display:block;border:2px solid var(--cream2)"
+            onmousedown="teDown(event)" onmousemove="teMove(event)" onmouseup="teUp()" onmouseleave="teUp()"
+            ontouchstart="teTouchStart(event)" ontouchmove="teTouchMove(event)" ontouchend="teUp()"></canvas>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+            <span style="font-size:12px;color:var(--muted);white-space:nowrap">Zoom</span>
+            <input type="range" id="thumb-zoom-slider" style="flex:1" oninput="teZoom(this.value)" />
+            <button type="button" onclick="applyThumbCrop()" style="background:var(--green);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer">Save crop</button>
+            <button type="button" onclick="closeThumbEditor()" style="background:none;border:1px solid #ccc;border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer">Cancel</button>
+          </div>
+        </div>
+        <input type="url" id="upload-thumb" placeholder="Or paste an image URL…" oninput="onThumbUrlInput(this.value)" />
+      </div>
+
+      <!-- Tab + Section + Sub-section -->
+      <div class="upload-two-col">
+        <div class="upload-field">
+          <label>Category</label>
+          <select id="upload-tab">
+            <option value="holiday">Holiday Class</option>
+            <option value="training">Training Videos</option>
+          </select>
+        </div>
+        <div class="upload-field">
+          <label>Section <span>— optional</span></label>
+          <select id="upload-section" onchange="populateSubSectionDropdown(this.value)">
+            <option value="">No section</option>
+          </select>
+        </div>
+      </div>
+      <div class="upload-field" style="display:none">
+        <label>Sub-section <span>— optional, appears within the section above</span></label>
+        <select id="upload-subsection">
+          <option value="">No sub-section</option>
+        </select>
+      </div>
+
+      <!-- Year level -->
+      <div class="upload-field">
+        <label>Year Level <span>— optional</span></label>
+        <select id="upload-year">
+          <option value="">Select year…</option>
+          <option>Year 7</option>
+          <option>Year 8</option>
+          <option>Year 9</option>
+          <option>Year 10</option>
+          <option>Year 11</option>
+          <option>Year 12</option>
+        </select>
+      </div>
+
+      <!-- Subject -->
+      <div class="upload-field">
+        <label>Subject</label>
+        <select id="upload-subject">
+          <option value="">Select subject…</option>
+          <option>Maths Advanced</option>
+          <option>Extension 1</option>
+          <option>Extension 2</option>
+          <option>Standard</option>
+          <option>General / All</option>
+        </select>
+      </div>
+
+      <!-- Description -->
+      <div class="upload-field">
+        <label>Description <span>— what does this video cover?</span></label>
+        <textarea id="upload-desc" placeholder="e.g. Covers limits, the definition of a derivative, and first principles…"></textarea>
+      </div>
+
+      <!-- Tags -->
+      <div class="upload-field">
+        <label>Tags <span>— optional</span></label>
+        <div class="tag-input-wrap" id="tag-wrap" onclick="document.getElementById('tag-real').focus()">
+          <input class="tag-input-real" id="tag-real" placeholder="Type a tag and press Enter…"
+            onkeydown="handleTagKey(event)" />
+        </div>
+        <div class="tag-hint">Press Enter or comma to add a tag. Click × to remove.</div>
+      </div>
+
+      <div class="upload-success" id="upload-success">
+        Video uploaded successfully! It will appear in the library shortly.
+      </div>
+
+      <div class="upload-actions">
+        <button class="btn-submit" onclick="handleUpload()">Save Video</button>
+        <button class="btn-cancel" onclick="closeUpload()">Cancel</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- VIDEO MODAL -->
+<div id="video-modal" onclick="closeModal(event)">
+  <div class="modal-inner">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Video</span>
+      <button class="modal-close" onclick="closeVideoModal()">&#x2715;</button>
+    </div>
+    <div class="video-wrapper">
+      <iframe id="modal-iframe" src="" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+    </div>
+    <!-- Forum -->
+    <div class="modal-qa">
+      <div class="modal-qa-header">
+        <h3>Discussion</h3>
+        <span class="forum-count" id="forum-count"></span>
+      </div>
+
+      <!-- Existing posts -->
+      <div class="forum-posts" id="forum-posts"></div>
+
+      <!-- New post -->
+      <div class="forum-new-post">
+        <h4>Ask a question or leave a comment</h4>
+        <div class="anon-row" onclick="toggleAnon('forum-anon-sw','forum-name-field')">
+          <div class="toggle-switch" id="forum-anon-sw"></div>
+          <span class="anon-label">Post anonymously</span>
+        </div>
+        <div class="forum-field" id="forum-name-field" style="margin-bottom:12px">
+          <input type="text" id="forum-name" placeholder="Your name (e.g. Michael C.)" />
+        </div>
+        <div class="forum-field">
+          <textarea id="forum-message" placeholder="Write your question or comment here..."></textarea>
+        </div>
+        <button class="btn-post" onclick="postToForum()">Post</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="/js/tm-sandbox.js" defer></script>
+<script>
+  document.getElementById('portal').style.display = 'block';
+
+  /* ── Data ── */
+  const TABS = [
+    { id: 'holiday',  name: 'Holiday Class' },
+    { id: 'training', name: 'Training Videos' },
+  ];
+  let activeTab = 'holiday';
+  let sections = { holiday: [], training: [] };
+  let videos = [];
+  let filterSec = '';
+  let filterSubSec = '';
+
+  /* ── Persist ── */
+  function saveData() {
+    try {
+      localStorage.setItem('tm_tutor_videos',   JSON.stringify(videos));
+      localStorage.setItem('tm_tutor_sections', JSON.stringify(sections));
+    } catch(e) {}
+  }
+  function loadData() {
+    try {
+      const v = localStorage.getItem('tm_tutor_videos');
+      const s = localStorage.getItem('tm_tutor_sections');
+      const f = localStorage.getItem('tm_tutor_forum');
+      if (v) videos = JSON.parse(v);
+      if (s) {
+        const loaded = JSON.parse(s);
+        // Only bring in tabs we still use; migrate to add subSections
+        ['holiday','training'].forEach(tab => {
+          if (loaded[tab]) {
+            sections[tab] = loaded[tab].map(sec => ({ subSections: [], ...sec }));
+          }
+        });
+      }
+      if (f) forumPosts = JSON.parse(f);
+      // Remove videos that belong to removed tabs
+      videos = videos.filter(v => ['holiday','training'].includes(v.tab));
+    } catch(e) {}
+  }
+
+  /* ── Thumbnail helper ── */
+  function getThumb(v) {
+    if (v.thumb) return v.thumb;
+    const url = v.url || '';
+    const yt = url.match(/(?:youtu\.be\/|[?&]v=)([A-Za-z0-9_-]{11})/);
+    if (yt) return 'https://img.youtube.com/vi/' + yt[1] + '/mqdefault.jpg';
+    return null;
+  }
+
+  /* ── Switch top tab ── */
+  function switchTab(tabId, btn) {
+    document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeTab = tabId;
+    filterSec = ''; filterSubSec = '';
+    renderContent();
+  }
+
+  /* ── Filter controls ── */
+  function updateFilterBar() {
+    const tabSections = sections[activeTab] || [];
+    const bar = document.getElementById('filter-bar');
+    bar.style.display = tabSections.length > 0 ? 'flex' : 'none';
+    const secSel = document.getElementById('filter-section');
+    secSel.innerHTML = '<option value="">All sections</option>';
+    tabSections.forEach(s => {
+      const o = document.createElement('option');
+      o.value = s.id; o.textContent = s.name;
+      if (s.id === filterSec) o.selected = true;
+      secSel.appendChild(o);
+    });
+    updateFilterSubBar();
+  }
+
+  function updateFilterSubBar() {
+    const tabSections = sections[activeTab] || [];
+    const sec = tabSections.find(s => s.id === filterSec);
+    const subSel = document.getElementById('filter-subsection');
+    subSel.innerHTML = '<option value="">All sub-sections</option>';
+    subSel.style.display = (sec && sec.subSections.length > 0) ? 'block' : 'none';
+    if (sec) {
+      sec.subSections.forEach(ss => {
+        const o = document.createElement('option');
+        o.value = ss.id; o.textContent = ss.name;
+        if (ss.id === filterSubSec) o.selected = true;
+        subSel.appendChild(o);
+      });
+    }
+  }
+
+  function onFilterSectionChange() {
+    filterSec = document.getElementById('filter-section').value;
+    filterSubSec = '';
+    updateFilterSubBar();
+    renderContent();
+  }
+
+  function clearFilters() {
+    filterSec = ''; filterSubSec = '';
+    document.getElementById('filter-section').value = '';
+    document.getElementById('filter-subsection').value = '';
+    updateFilterSubBar();
+    renderContent();
+  }
+
+  /* ── Render content for active tab ── */
+  function renderContent() {
+    updateFilterBar();
+    const area = document.getElementById('cat-content');
+    const tabSections = (sections[activeTab] || []).filter(s => !filterSec || s.id === filterSec);
+    const filterSubSecVal = document.getElementById('filter-subsection').value || filterSubSec;
+
+    let html = '';
+    let totalVideosShown = 0;
+
+    tabSections.forEach(sec => {
+      // Videos in this section with no sub-section
+      const directVideos = videos.filter(v =>
+        v.tab === activeTab && v.sectionId === sec.id && !v.subSectionId &&
+        (!filterSubSecVal)
+      );
+      const subSections = (sec.subSections || []).filter(ss => !filterSubSecVal || ss.id === filterSubSecVal);
+      const subVideos = videos.filter(v => v.tab === activeTab && v.sectionId === sec.id && v.subSectionId &&
+        subSections.some(ss => ss.id === v.subSectionId));
+      const totalInSec = directVideos.length + subVideos.length;
+      totalVideosShown += totalInSec;
+
+      html += `<div class="section-heading">
+        <span class="section-name">${sec.name}</span>
+        <span class="section-actions">
+          <button class="btn-add-subsection" onclick="addSubSection('${sec.id}')" title="Add sub-section">+ Sub-section</button>
+          <button class="btn-edit-section" onclick="editSection('${sec.id}')" title="Rename">&#9998;</button>
+          <button class="btn-delete-section" onclick="deleteSection('${sec.id}')" title="Delete">&#x2715;</button>
+        </span>
+      </div>`;
+
+      html += `<div class="section-drop-zone" data-section="${sec.id}"
+          ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event,'${sec.id}')">`;
+
+      // Sub-sections
+      subSections.forEach(ss => {
+        const ssVideos = videos.filter(v => v.tab === activeTab && v.sectionId === sec.id && v.subSectionId === ss.id);
+        html += `<div class="subsection-heading">
+          <span>${ss.name}</span>
+          <span class="section-actions">
+            <button class="btn-edit-section" onclick="editSubSection('${sec.id}','${ss.id}')" title="Rename">&#9998;</button>
+            <button class="btn-delete-section" onclick="deleteSubSection('${sec.id}','${ss.id}')" title="Delete">&#x2715;</button>
+          </span>
+        </div>`;
+        html += `<div class="section-drop-zone subsection-drop-zone" data-section="${sec.id}" data-subsection="${ss.id}"
+            ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event,'${sec.id}','${ss.id}')">`;
+        if (ssVideos.length === 0) {
+          html += `<div class="empty-state" style="padding:20px">
+            <p style="margin-bottom:10px;font-size:14px">No videos yet.</p>
+            <button class="btn-empty-add" onclick="openUpload('${activeTab}','${sec.id}','${ss.id}')">+ Add Video</button>
+          </div>`;
+        } else {
+          html += '<div class="video-grid">' + ssVideos.map(v => videoCard(v)).join('') + '</div>';
+        }
+        html += '</div>';
+      });
+
+      // Direct section videos (no sub-section)
+      if (directVideos.length > 0) {
+        if (subSections.length > 0) html += `<div class="subsection-heading" style="font-style:italic"><span>General</span></div>`;
+        html += '<div class="video-grid">' + directVideos.map(v => videoCard(v)).join('') + '</div>';
+      } else if (subSections.length === 0) {
+        html += `<div class="empty-state" style="padding:32px 20px">
+          <div class="empty-icon">🎬</div>
+          <p style="margin-bottom:14px">No videos yet — drag one here or add a new one.</p>
+          <button class="btn-empty-add" onclick="openUpload('${activeTab}','${sec.id}')">+ Add Video</button>
+        </div>`;
+      }
+
+      html += '</div>'; // close section-drop-zone
+    });
+
+    // Unsectioned videos (only show if no section filter active)
+    if (!filterSec && !filterSubSecVal) {
+      const tabVideos = videos.filter(v => v.tab === activeTab && !v.sectionId);
+      totalVideosShown += tabVideos.length;
+      if (tabVideos.length > 0) {
+        if ((sections[activeTab] || []).length > 0) html += '<div class="section-heading"><span class="section-name">Other</span><span class="section-actions"></span></div>';
+        html += '<div class="video-grid">' + tabVideos.map(v => videoCard(v)).join('') + '</div>';
+      }
+    }
+
+    // Bottom action row
+    html += `<div class="tab-actions">
+      <button class="btn-add-section" onclick="addSection()">+ Add Section</button>
+      <button class="btn-add-video-inline" onclick="openUpload('${activeTab}','')">+ Add Video</button>
+    </div>`;
+
+    const allSections = sections[activeTab] || [];
+    const allVideos   = videos.filter(v => v.tab === activeTab);
+    if (allSections.length === 0 && allVideos.length === 0) {
+      area.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">🎬</div>
+        <h3>Nothing here yet</h3>
+        <p>Add a section (e.g. "Year 11") or go straight to adding a video.</p>
+      </div>` + html;
+    } else {
+      area.innerHTML = html;
+    }
+  }
+
+  function videoCard(v) {
+    const safe = v.title.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    const badge = [v.year, v.subject].filter(Boolean).join(' · ');
+    return `<div class="video-card" draggable="true"
+        ondragstart="dragStart(event,'${v.id}')"
+        ondragend="dragEnd(event)"
+        onclick="openVideo('${v.url}','${safe}','${v.id}')">
+      <button class="card-menu-btn" onclick="event.stopPropagation();toggleMenu('menu_${v.id}')">&#x22EE;</button>
+      <div class="card-menu" id="menu_${v.id}">
+        <button class="card-menu-item" onclick="event.stopPropagation();editVideo('${v.id}')">&#9998; Edit</button>
+        <button class="card-menu-item danger" onclick="event.stopPropagation();deleteVideo('${v.id}')">&#x2715; Delete</button>
+      </div>
+      <div class="video-thumb" style="${getThumb(v) ? 'background:#000' : ''}">
+        ${getThumb(v) ? `<img src="${getThumb(v)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.85">` : ''}
+        <div class="play-icon" style="position:relative;z-index:1"><svg width="20" height="20" fill="white" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+      </div>
+      <div class="video-body">
+        ${badge ? `<div class="video-badge">${badge}</div>` : ''}
+        <div class="video-title">${v.title}</div>
+        ${v.desc ? `<div class="video-desc">${v.desc}</div>` : ''}
+        <div class="video-meta">
+          ${v.tags.map(t=>`<span class="tag-chip" style="pointer-events:none">${t}</span>`).join('')}
+          <button class="btn-watch" style="margin-left:auto" onclick="event.stopPropagation();openVideo('${v.url}','${safe}')">Watch</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  /* ── Add / edit / delete section ── */
+  function addSection() {
+    const name = prompt('Section name (e.g. "Year 11" or "Parramatta"):');
+    if (!name || !name.trim()) return;
+    sections[activeTab].push({ id: 'sec_' + Date.now(), name: name.trim(), subSections: [] });
+    saveData(); renderContent();
+  }
+  function editSection(secId) {
+    const sec = sections[activeTab].find(s => s.id === secId);
+    if (!sec) return;
+    const newName = prompt('Rename section:', sec.name);
+    if (!newName || !newName.trim()) return;
+    sec.name = newName.trim();
+    saveData(); renderContent();
+  }
+  function deleteSection(secId) {
+    if (!confirm('Delete this section and all its sub-sections? Videos inside will move to the top level.')) return;
+    const sec = sections[activeTab].find(s => s.id === secId);
+    if (sec) sec.subSections.forEach(ss => { videos.forEach(v => { if (v.subSectionId === ss.id) { v.subSectionId = null; v.sectionId = null; } }); });
+    sections[activeTab] = sections[activeTab].filter(s => s.id !== secId);
+    videos.forEach(v => { if (v.sectionId === secId) { v.sectionId = null; v.subSectionId = null; } });
+    saveData(); renderContent();
+  }
+
+  /* ── Add / edit / delete sub-section ── */
+  function addSubSection(secId) {
+    const sec = sections[activeTab].find(s => s.id === secId);
+    if (!sec) return;
+    const name = prompt('Sub-section name (e.g. "Week 1" or "Parramatta"):');
+    if (!name || !name.trim()) return;
+    if (!sec.subSections) sec.subSections = [];
+    sec.subSections.push({ id: 'ss_' + Date.now(), name: name.trim() });
+    saveData(); renderContent();
+  }
+  function editSubSection(secId, ssId) {
+    const sec = sections[activeTab].find(s => s.id === secId);
+    if (!sec) return;
+    const ss = sec.subSections.find(x => x.id === ssId);
+    if (!ss) return;
+    const newName = prompt('Rename sub-section:', ss.name);
+    if (!newName || !newName.trim()) return;
+    ss.name = newName.trim();
+    saveData(); renderContent();
+  }
+  function deleteSubSection(secId, ssId) {
+    if (!confirm('Delete this sub-section? Videos inside it will stay in the parent section.')) return;
+    const sec = sections[activeTab].find(s => s.id === secId);
+    if (!sec) return;
+    sec.subSections = sec.subSections.filter(x => x.id !== ssId);
+    videos.forEach(v => { if (v.subSectionId === ssId) v.subSectionId = null; });
+    saveData(); renderContent();
+  }
+
+  /* ── Upload modal ── */
+  function openUpload(preTab, preSec, preSubSec) {
+    document.getElementById('upload-modal').classList.add('open');
+    document.getElementById('upload-modal').scrollTop = 0;
+    document.body.style.overflow = 'hidden';
+    populateSectionDropdown(preTab || activeTab);
+    if (preTab) document.getElementById('upload-tab').value = preTab;
+    if (preSec !== undefined) {
+      document.getElementById('upload-section').value = preSec;
+      populateSubSectionDropdown(preSec);
+    }
+    if (preSubSec !== undefined) document.getElementById('upload-subsection').value = preSubSec;
+  }
+  function closeUpload() {
+    document.getElementById('upload-modal').classList.remove('open');
+    document.body.style.overflow = '';
+    document.getElementById('upload-success').style.display = 'none';
+    document.querySelector('#upload-modal .upload-actions').style.opacity = '';
+    document.querySelector('#upload-modal .upload-actions').style.pointerEvents = '';
+    ['upload-url','upload-thumb','upload-title','upload-year','upload-subject','upload-desc'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('drop-zone-name').style.display = 'none';
+    resetThumbPickers();
+    tags = []; renderTags();
+  }
+  function closeUploadModal(e) {
+    if (e.target === document.getElementById('upload-modal')) closeUpload();
+  }
+
+  function populateSectionDropdown(tabId) {
+    const sel = document.getElementById('upload-section');
+    sel.innerHTML = '<option value="">No section (show at top level)</option>';
+    (sections[tabId] || []).forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id; opt.textContent = s.name;
+      sel.appendChild(opt);
+    });
+    populateSubSectionDropdown('');
+  }
+
+  function populateSubSectionDropdown(secId) {
+    const tab   = document.getElementById('upload-tab').value;
+    const sel   = document.getElementById('upload-subsection');
+    const sec   = (sections[tab] || []).find(s => s.id === secId);
+    sel.innerHTML = '<option value="">No sub-section</option>';
+    if (sec && sec.subSections && sec.subSections.length > 0) {
+      sec.subSections.forEach(ss => {
+        const opt = document.createElement('option');
+        opt.value = ss.id; opt.textContent = ss.name;
+        sel.appendChild(opt);
+      });
+      sel.closest('.upload-field').style.display = 'block';
+    } else {
+      sel.closest('.upload-field').style.display = 'none';
+    }
+  }
+
+  document.getElementById('upload-tab').addEventListener('change', function() {
+    populateSectionDropdown(this.value);
+  });
+
+  function setSource(type, btn) {
+    document.querySelectorAll('.source-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('source-url').style.display = type === 'url' ? 'block' : 'none';
+    document.getElementById('source-file').style.display = type === 'file' ? 'block' : 'none';
+    if (type === 'url') { resetThumbPickers(); }
+  }
+
+  function handleFileSelect(input) {
+    const file = input.files[0];
+    if (!file) return;
+    document.getElementById('drop-zone-name').textContent = '✓ ' + file.name;
+    document.getElementById('drop-zone-name').style.display = 'block';
+    // Load video for frame picking
+    const blobUrl = URL.createObjectURL(file);
+    const vid = document.getElementById('thumb-video-preview');
+    vid.src = blobUrl;
+    vid.onloadedmetadata = () => {
+      document.getElementById('thumb-scrubber').max = Math.floor(vid.duration);
+      vid.currentTime = 0;
+    };
+    document.getElementById('thumb-yt-picker').style.display = 'none';
+    document.getElementById('thumb-video-picker').style.display = 'block';
+  }
+
+  /* ── Thumbnail helpers ── */
+  function resetThumbPickers() {
+    document.getElementById('thumb-yt-picker').style.display = 'none';
+    document.getElementById('thumb-video-picker').style.display = 'none';
+    document.getElementById('thumb-preview-wrap').style.display = 'none';
+    document.getElementById('thumb-editor').style.display = 'none';
+    document.getElementById('upload-thumb').value = '';
+    const vid = document.getElementById('thumb-video-preview');
+    vid.src = ''; vid.pause();
+  }
+
+  function showThumbPreview(src) {
+    document.getElementById('thumb-preview-img').src = src;
+    document.getElementById('thumb-preview-wrap').style.display = 'flex';
+    document.getElementById('thumb-editor').style.display = 'none';
+  }
+
+  function onThumbUrlInput(val) {
+    if (val.trim()) showThumbPreview(val.trim());
+    else document.getElementById('thumb-preview-wrap').style.display = 'none';
+  }
+
+  function clearThumb() {
+    document.getElementById('upload-thumb').value = '';
+    document.getElementById('thumb-preview-wrap').style.display = 'none';
+    document.getElementById('thumb-editor').style.display = 'none';
+  }
+
+  function scrubThumb(val) {
+    const vid = document.getElementById('thumb-video-preview');
+    vid.currentTime = parseFloat(val);
+  }
+
+  function captureThumbFrame() {
+    const vid = document.getElementById('thumb-video-preview');
+    const canvas = document.getElementById('thumb-canvas');
+    canvas.width  = vid.videoWidth  || 320;
+    canvas.height = vid.videoHeight || 180;
+    canvas.getContext('2d').drawImage(vid, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    document.getElementById('upload-thumb').value = dataUrl;
+    showThumbPreview(dataUrl);
+  }
+
+  // YouTube URL → show 4 frame choices
+  document.getElementById('upload-url').addEventListener('input', function() {
+    const val = this.value;
+    const yt = val.match(/(?:youtu\.be\/|[?&]v=)([A-Za-z0-9_-]{11})/);
+    document.getElementById('thumb-video-picker').style.display = 'none';
+    if (yt) {
+      const id = yt[1];
+      const frames = document.getElementById('yt-frames');
+      frames.innerHTML = ['0','1','2','3'].map(n =>
+        `<img src="https://img.youtube.com/vi/${id}/${n}.jpg" data-url="https://img.youtube.com/vi/${id}/${n}.jpg"
+          onclick="selectYtThumb(this)"
+          style="height:70px;border-radius:6px;cursor:pointer;border:2px solid transparent;object-fit:cover;transition:border 0.15s" />`
+      ).join('');
+      document.getElementById('thumb-yt-picker').style.display = 'block';
+    } else {
+      document.getElementById('thumb-yt-picker').style.display = 'none';
+    }
+  });
+
+  function selectYtThumb(img) {
+    document.querySelectorAll('#yt-frames img').forEach(i => i.style.border = '2px solid transparent');
+    img.style.border = '2px solid var(--green)';
+    document.getElementById('upload-thumb').value = img.dataset.url;
+    showThumbPreview(img.dataset.url);
+  }
+
+  /* ── Thumbnail crop editor ── */
+  const TE = { img: null, zoom: 1, minZoom: 1, ox: 0, oy: 0, drag: false, lx: 0, ly: 0 };
+  const TE_W = 320, TE_H = 180;
+
+  function openThumbEditor() {
+    const src = document.getElementById('upload-thumb').value;
+    if (!src) return;
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.onload = function() {
+      TE.img = image;
+      TE.minZoom = Math.max(TE_W / image.naturalWidth, TE_H / image.naturalHeight);
+      TE.zoom = TE.minZoom;
+      TE.ox = (image.naturalWidth * TE.zoom - TE_W) / 2;
+      TE.oy = (image.naturalHeight * TE.zoom - TE_H) / 2;
+      const slider = document.getElementById('thumb-zoom-slider');
+      slider.min = TE.minZoom;
+      slider.max = (TE.minZoom * 4).toFixed(3);
+      slider.step = 0.001;
+      slider.value = TE.zoom;
+      teDrawCanvas();
+      document.getElementById('thumb-preview-wrap').style.display = 'none';
+      document.getElementById('thumb-editor').style.display = 'block';
+    };
+    image.onerror = function() {
+      // Cross-origin blocked — open editor using an HTML img element approach instead
+      alert('This image cannot be cropped due to browser security restrictions. Try capturing a frame from the video instead, or paste a direct image URL.');
+    };
+    image.src = src;
+  }
+
+  function teDrawCanvas() {
+    const canvas = document.getElementById('thumb-editor-canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, TE_W, TE_H);
+    if (!TE.img) return;
+    ctx.drawImage(TE.img, -TE.ox, -TE.oy, TE.img.naturalWidth * TE.zoom, TE.img.naturalHeight * TE.zoom);
+  }
+
+  function teClamp() {
+    const maxOx = TE.img.naturalWidth  * TE.zoom - TE_W;
+    const maxOy = TE.img.naturalHeight * TE.zoom - TE_H;
+    TE.ox = Math.max(0, Math.min(TE.ox, maxOx));
+    TE.oy = Math.max(0, Math.min(TE.oy, maxOy));
+  }
+
+  function teZoom(val) {
+    const newZoom = parseFloat(val);
+    TE.ox = (TE.ox + TE_W / 2) * newZoom / TE.zoom - TE_W / 2;
+    TE.oy = (TE.oy + TE_H / 2) * newZoom / TE.zoom - TE_H / 2;
+    TE.zoom = newZoom;
+    teClamp(); teDrawCanvas();
+  }
+
+  function teDown(e) { TE.drag = true; TE.lx = e.clientX; TE.ly = e.clientY; e.preventDefault(); }
+  function teMove(e) {
+    if (!TE.drag) return;
+    TE.ox -= (e.clientX - TE.lx); TE.oy -= (e.clientY - TE.ly);
+    TE.lx = e.clientX; TE.ly = e.clientY;
+    teClamp(); teDrawCanvas();
+  }
+  function teUp() { TE.drag = false; }
+
+  function teTouchStart(e) { const t = e.touches[0]; TE.drag = true; TE.lx = t.clientX; TE.ly = t.clientY; e.preventDefault(); }
+  function teTouchMove(e) { const t = e.touches[0]; teMove({clientX: t.clientX, clientY: t.clientY}); e.preventDefault(); }
+
+  function applyThumbCrop() {
+    const canvas = document.getElementById('thumb-editor-canvas');
+    try {
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      document.getElementById('upload-thumb').value = dataUrl;
+      showThumbPreview(dataUrl);
+    } catch(e) {
+      // Tainted canvas — save the current URL as-is
+      closeThumbEditor();
+    }
+  }
+
+  function closeThumbEditor() {
+    document.getElementById('thumb-editor').style.display = 'none';
+    document.getElementById('thumb-preview-wrap').style.display = 'flex';
+  }
+
+  /* ── Tags ── */
+  let tags = [];
+  function renderTags() {
+    const wrap = document.getElementById('tag-wrap');
+    wrap.querySelectorAll('.tag-chip').forEach(c => c.remove());
+    const input = document.getElementById('tag-real');
+    tags.forEach((t, i) => {
+      const chip = document.createElement('div');
+      chip.className = 'tag-chip';
+      chip.innerHTML = t + '<button onclick="removeTag(' + i + ')" type="button">&#x2715;</button>';
+      wrap.insertBefore(chip, input);
+    });
+  }
+  function handleTagKey(e) {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const val = e.target.value.replace(',','').trim();
+      if (val && !tags.includes(val)) { tags.push(val); renderTags(); }
+      e.target.value = '';
+    }
+  }
+  function removeTag(i) { tags.splice(i, 1); renderTags(); }
+
+  /* ── Save video ── */
+  function handleUpload() {
+    const title = document.getElementById('upload-title').value.trim();
+    const url   = document.getElementById('upload-url').value.trim();
+    const tab   = document.getElementById('upload-tab').value;
+    if (!title) { document.getElementById('upload-title').focus(); return; }
+
+    videos.push({
+      id: 'v_' + Date.now(),
+      title,
+      url,
+      thumb:     document.getElementById('upload-thumb').value.trim() || null,
+      tab,
+      sectionId:    document.getElementById('upload-section').value || null,
+      subSectionId: document.getElementById('upload-subsection').value || null,
+      year:      document.getElementById('upload-year').value,
+      subject:   document.getElementById('upload-subject').value,
+      desc:      document.getElementById('upload-desc').value.trim(),
+      tags:      [...tags],
+    });
+
+    activeTab = tab;
+    document.getElementById('upload-success').style.display = 'block';
+    document.querySelector('#upload-modal .upload-actions').style.opacity = '0.4';
+    document.querySelector('#upload-modal .upload-actions').style.pointerEvents = 'none';
+
+    saveData();
+    setTimeout(() => {
+      closeUpload();
+      document.querySelectorAll('.cat-tab').forEach((btn, i) => {
+        const id = ['holiday','training'][i];
+        btn.classList.toggle('active', id === tab);
+      });
+      renderContent();
+    }, 1000);
+  }
+
+  /* ── Card menu ── */
+  function toggleMenu(menuId) {
+    document.querySelectorAll('.card-menu.open').forEach(m => {
+      if (m.id !== menuId) m.classList.remove('open');
+    });
+    document.getElementById(menuId).classList.toggle('open');
+  }
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.card-menu.open').forEach(m => m.classList.remove('open'));
+  });
+
+  /* ── Edit video ── */
+  let editingId = null;
+  function editVideo(id) {
+    const v = videos.find(v => v.id === id);
+    if (!v) return;
+    editingId = id;
+    populateSectionDropdown(v.tab);
+    document.getElementById('upload-tab').value     = v.tab;
+    document.getElementById('upload-section').value = v.sectionId || '';
+    populateSubSectionDropdown(v.sectionId || '');
+    document.getElementById('upload-subsection').value = v.subSectionId || '';
+    document.getElementById('upload-title').value   = v.title;
+    document.getElementById('upload-url').value     = v.url;
+    document.getElementById('upload-thumb').value   = v.thumb || '';
+    document.getElementById('upload-year').value    = v.year;
+    document.getElementById('upload-subject').value = v.subject;
+    document.getElementById('upload-desc').value    = v.desc;
+    tags = [...v.tags]; renderTags();
+    document.querySelector('.upload-header h2').textContent = 'Edit Video';
+    openUpload(v.tab, v.sectionId || '', v.subSectionId || '');
+  }
+
+  /* ── Delete video ── */
+  function deleteVideo(id) {
+    if (!confirm('Delete this video?')) return;
+    videos = videos.filter(v => v.id !== id);
+    saveData(); renderContent();
+  }
+
+  /* ── Drag and drop ── */
+  let dragId = null;
+  function dragStart(e, id) {
+    dragId = id;
+    e.currentTarget.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  }
+  function dragEnd(e) {
+    e.currentTarget.classList.remove('dragging');
+    dragId = null;
+  }
+  function dragOver(e) {
+    e.preventDefault();
+    e.currentTarget.classList.add('drop-target');
+  }
+  function dragLeave(e) {
+    e.currentTarget.classList.remove('drop-target');
+  }
+  function drop(e, sectionId, subSectionId) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.classList.remove('drop-target');
+    if (!dragId) return;
+    const v = videos.find(v => v.id === dragId);
+    if (v) { v.sectionId = sectionId || null; v.subSectionId = subSectionId || null; v.tab = activeTab; }
+    saveData(); renderContent();
+  }
+
+  /* ── Override handleUpload to support edit mode ── */
+  const _origHandleUpload = handleUpload;
+  handleUpload = function() {
+    if (!editingId) { _origHandleUpload(); return; }
+    const v = videos.find(v => v.id === editingId);
+    if (!v) return;
+    v.tab       = document.getElementById('upload-tab').value;
+    v.sectionId    = document.getElementById('upload-section').value || null;
+    v.subSectionId = document.getElementById('upload-subsection').value || null;
+    v.title     = document.getElementById('upload-title').value.trim();
+    v.url       = document.getElementById('upload-url').value.trim();
+    v.thumb     = document.getElementById('upload-thumb').value.trim() || null;
+    v.year      = document.getElementById('upload-year').value;
+    v.subject   = document.getElementById('upload-subject').value;
+    v.desc      = document.getElementById('upload-desc').value.trim();
+    v.tags      = [...tags];
+    activeTab   = v.tab;
+    editingId   = null;
+    document.querySelector('.upload-header h2').textContent = 'Add New Video';
+    saveData();
+    document.getElementById('upload-success').style.display = 'block';
+    document.querySelector('#upload-modal .upload-actions').style.opacity = '0.4';
+    document.querySelector('#upload-modal .upload-actions').style.pointerEvents = 'none';
+    setTimeout(() => { closeUpload(); renderContent(); }, 900);
+  };
+
+  /* ── Forum ── */
+  let forumPosts = [];
+  let currentVideoKey = null;
+
+  function saveForum() {
+    try { localStorage.setItem('tm_tutor_forum', JSON.stringify(forumPosts)); } catch(e) {}
+  }
+
+  function fmtTime(ts) {
+    const diff = Date.now() - ts;
+    if (diff < 60000) return 'just now';
+    if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
+    if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
+    return new Date(ts).toLocaleDateString('en-AU', {day:'numeric',month:'short'});
+  }
+  function initials(name) {
+    return (name || '?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  }
+
+  function renderForum() {
+    const posts = forumPosts.filter(p => p.videoKey === currentVideoKey);
+    const container = document.getElementById('forum-posts');
+    const countEl   = document.getElementById('forum-count');
+    if (!container) return;
+    countEl.textContent = posts.length ? posts.length + ' post' + (posts.length>1?'s':'') : '';
+
+    if (posts.length === 0) {
+      container.innerHTML = '<p class="forum-empty">No posts yet — be the first to ask!</p>';
+      return;
+    }
+
+    container.innerHTML = posts.map(post => {
+      const isAnon   = post.anonymous;
+      const name     = isAnon ? 'Anonymous' : (post.author || 'Tutor');
+      const av       = isAnon ? '?' : initials(name);
+      const repliesHtml = (post.replies || []).map(r => {
+        const rAnon = r.anonymous;
+        const rName = rAnon ? 'Anonymous' : (r.author || 'Tutor');
+        return `<div class="forum-reply">
+          <div class="post-header" style="margin-bottom:5px">
+            <div class="post-avatar ${rAnon?'anon':''}" style="width:24px;height:24px;font-size:10px">${rAnon?'?':initials(rName)}</div>
+            <span class="post-author">${rName}</span>
+            <span class="post-time">${fmtTime(r.timestamp)}</span>
+          </div>
+          <div class="post-msg">${r.message}</div>
+        </div>`;
+      }).join('');
+
+      return `<div class="forum-post">
+        <div class="post-header">
+          <div class="post-avatar ${isAnon?'anon':''}">${av}</div>
+          <span class="post-author">${name}</span>
+          <span class="post-time">${fmtTime(post.timestamp)}</span>
+        </div>
+        <div class="post-msg">${post.message}</div>
+        ${repliesHtml ? `<div class="forum-replies">${repliesHtml}</div>` : ''}
+        <div class="inline-reply-form" id="rf_${post.id}">
+          <div class="anon-row" style="margin-bottom:8px" onclick="toggleAnon('ra_${post.id}','rn_wrap_${post.id}')">
+            <div class="toggle-switch" id="ra_${post.id}"></div>
+            <span class="anon-label" style="font-size:12px">Anonymous</span>
+            <input type="text" id="rn_${post.id}" placeholder="Your name" onclick="event.stopPropagation()"
+              style="flex:1;margin-left:10px;padding:6px 10px;border:1.5px solid #d1d5db;border-radius:6px;font-size:12px;font-family:inherit;outline:none" />
+          </div>
+          <textarea id="rm_${post.id}" placeholder="Write your reply..." rows="3"
+            style="width:100%;padding:8px 10px;border:1.5px solid #d1d5db;border-radius:6px;font-size:13px;font-family:inherit;outline:none;resize:vertical;margin-bottom:8px"></textarea>
+          <button class="btn-post" style="font-size:12px;padding:7px 16px" onclick="submitReply('${post.id}')">Reply</button>
+          <button class="btn-cancel-reply" onclick="document.getElementById('rf_${post.id}').classList.remove('open')">Cancel</button>
+        </div>
+        <div class="post-actions">
+          <button class="reply-toggle-btn" onclick="document.getElementById('rf_${post.id}').classList.toggle('open')">
+            ↩ Reply${post.replies&&post.replies.length ? ' ('+post.replies.length+')' : ''}
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleAnon(switchId, nameFieldId) {
+    const sw = document.getElementById(switchId);
+    sw.classList.toggle('on');
+    const field = document.getElementById(nameFieldId);
+    if (field) field.style.display = sw.classList.contains('on') ? 'none' : '';
+  }
+
+  function postToForum() {
+    const isAnon = document.getElementById('forum-anon-sw').classList.contains('on');
+    const name   = isAnon ? null : document.getElementById('forum-name').value.trim();
+    const msg    = document.getElementById('forum-message').value.trim();
+    if (!msg) { document.getElementById('forum-message').focus(); return; }
+    forumPosts.push({
+      id: 'p_' + Date.now(), videoKey: currentVideoKey,
+      author: name || null, anonymous: isAnon,
+      message: msg, timestamp: Date.now(), replies: []
+    });
+    saveForum();
+    document.getElementById('forum-message').value = '';
+    renderForum();
+  }
+
+  function submitReply(postId) {
+    const isAnon = document.getElementById('ra_' + postId).classList.contains('on');
+    const nameEl = document.getElementById('rn_' + postId);
+    const name   = isAnon ? null : (nameEl ? nameEl.value.trim() : null);
+    const msg    = document.getElementById('rm_' + postId).value.trim();
+    if (!msg) return;
+    const post = forumPosts.find(p => p.id === postId);
+    if (!post) return;
+    post.replies.push({ id: 'r_' + Date.now(), author: name||null, anonymous: isAnon, message: msg, timestamp: Date.now() });
+    saveForum();
+    renderForum();
+  }
+
+  /* ── Video modal ── */
+  function openVideo(url, title, videoId) {
+    currentVideoKey = videoId || url;
+    document.getElementById('modal-title').textContent = title || 'Video';
+    const iframe = document.getElementById('modal-iframe');
+    const ytMatch = url.match(/(?:youtu\.be\/|[?&]v=)([A-Za-z0-9_-]{11})/);
+    iframe.src = ytMatch ? 'https://www.youtube.com/embed/' + ytMatch[1] + '?autoplay=1' : url;
+    document.getElementById('video-modal').classList.add('open');
+    document.getElementById('video-modal').scrollTop = 0;
+    document.body.style.overflow = 'hidden';
+    renderForum();
+  }
+
+  function closeVideoModal() {
+    document.getElementById('video-modal').classList.remove('open');
+    document.getElementById('modal-iframe').src = '';
+    document.body.style.overflow = '';
+    currentVideoKey = null;
+  }
+  function closeModal(e) {
+    if (e.target === document.getElementById('video-modal')) closeVideoModal();
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeVideoModal(); });
+
+  /* ── Init ── */
+  loadData();
+  // Seed a sample video if library is empty
+  if (videos.length === 0) {
+    sections.holiday.push({ id: 'sec_seed', name: 'Year 11' });
+    videos.push({
+      id: 'v_seed',
+      title: 'Introduction to Calculus',
+      url: 'https://www.youtube.com/watch?v=WUvTyaaNkzM',
+      tab: 'holiday',
+      sectionId: 'sec_seed',
+      year: 'Year 11',
+      subject: 'Maths Advanced',
+      desc: 'A visual introduction to the core ideas of calculus — a great first watch before class.',
+      tags: ['calculus', 'year 11'],
+    });
+    saveData();
+  }
+  renderContent();
+</script>
+
+</body>
+</html>
